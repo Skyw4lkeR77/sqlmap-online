@@ -98,7 +98,7 @@ def run_sqlmap():
     
     # Path ke executable sqlmap (sesuai Dockerfile nanti)
     # Jika run local tanpa docker, pastikan 'sqlmap' ada di PATH atau ganti path absolut
-    sqlmap_cmd = ['python', 'sqlmap/sqlmap.py', '-u', real_target_url, '--batch', '--disable-coloring']
+    sqlmap_cmd = ['sqlmap', '-u', real_target_url, '--batch', '--disable-coloring']
     
     # Tambahkan flags aman dari user
     sqlmap_cmd.extend(flag_list)
