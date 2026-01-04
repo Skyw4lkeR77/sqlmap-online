@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQLMap Edu Panel</title>
+    <title>SQLMap Panel</title>
     <style>
         :root {
             --bg-color: #1a1b26;
@@ -21,13 +21,15 @@
             margin: 0;
             padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: space-between;
             min-height: 100vh;
         }
 
         .container {
             width: 100%;
             max-width: 800px;
+            margin: 0 auto;
         }
 
         header {
@@ -117,6 +119,90 @@
             color: #fff;
             margin-bottom: 10px;
         }
+
+        /* Icon Help */
+        .help-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #414868;
+            color: #a9b1d6;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            margin-left: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .help-icon:hover {
+            background: var(--accent-color);
+            color: #1a1b26;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+            background-color: var(--card-color);
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .flag-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .flag-table th, .flag-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #414868;
+        }
+
+        .flag-table th {
+            background: #16161e;
+            color: var(--accent-color);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.85em;
+            opacity: 0.7;
+            border-top: 1px solid #414868;
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
@@ -124,7 +210,7 @@
 <div class="container">
     <header>
         <h1>SQLMap Edu Panel</h1>
-        <p class="subtitle">Platform Pembelajaran Keamanan Siber (Simulator)</p>
+        <p class="subtitle">Platform Pembelajaran Keamanan Siber</p>
     </header>
 
     <div class="card">
@@ -138,9 +224,10 @@
             </select>
 
             <label for="flagsInput">Additional Flags (Optional):</label>
-            <input type="text" id="flagsInput" placeholder="Contoh: --dbs --tables (Dilarang: --os-shell, --file-read)">
+            <input type="text" id="flagsInput" placeholder="Contoh: --dbs --tables">
             <small style="display:block; margin-top:-10px; margin-bottom:15px; color:#565f89;">
                 Gunakan flags dasar untuk enumerasi database. Opsi berbahaya akan otomatis diblokir.
+                <span class="help-icon" id="helpIcon">?</span>
             </small>
 
             <button type="submit" id="runBtn">Jalankan SQLMap</button>
@@ -153,12 +240,54 @@
     </div>
 </div>
 
+<!-- Modal Bantuan Flags -->
+<div id="helpModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 style="color: var(--accent-color); margin-top:0;">Flags SQLMap</h2>
+        <p>Berikut adalah beberapa flags dasar yang aman digunakan di panel ini untuk belajar SQL Injection:</p>
+        
+        <table class="flag-table">
+            <thead>
+                <tr>
+                    <th>Flag</th>
+                    <th>Penjelasan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><code>--dbs</code></td><td>Mendaftar semua database yang tersedia</td></tr>
+                <tr><td><code>--tables -D [nama_db]</code></td><td>Mendaftar tabel pada database tertentu</td></tr>
+                <tr><td><code>--columns -D [db] -T [tabel]</code></td><td>Mendaftar kolom pada tabel tertentu</td></tr>
+                <tr><td><code>--dump -D [db] -T [tabel]</code></td><td>Mendump isi tabel (data)</td></tr>
+                <tr><td><code>--dump-all</code></td><td>Mendump semua tabel di semua database (hati-hati, lama)</td></tr>
+                <tr><td><code>--risk=1 --level=1</code></td><td>Tingkat pengujian dasar (default)</td></tr>
+                <tr><td><code>--risk=2 --level=2</code></td><td>Pengujian lebih agresif (masih aman di sini)</td></tr>
+                <tr><td><code>--technique=B</code></td><td>Hanya gunakan teknik Boolean-based blind</td></tr>
+                <tr><td><code>--technique=T</code></td><td>Hanya gunakan teknik Time-based blind</td></tr>
+                <tr><td><code>--technique=E</code></td><td>Hanya gunakan teknik Error-based</td></tr>
+                <tr><td><code>--technique=U</code></td><td>Hanya gunakan teknik Union query</td></tr>
+                <tr><td><code>--batch</code></td><td>Mode non-interaktif (sudah otomatis digunakan)</td></tr>
+                <tr><td><code>--flush-session</code></td><td>Membersihkan cache session sebelum scan</td></tr>
+                <tr><td><code>--threads=3</code></td><td>Menggunakan 3 thread (maksimal aman di demo)</td></tr>
+            </tbody>
+        </table>
+        
+        <p style="margin-top:20px; font-size:0.9em;">
+            <strong>Catatan:</strong> Flags berbahaya seperti <code>--os-shell</code>, <code>--sql-shell</code>, <code>--file-read</code>, dll. telah diblokir untuk keamanan.
+        </p>
+    </div>
+</div>
+
+<footer>
+    &copy; 2026 SQLMap Edu Panel • Dibuat oleh kypau untuk tujuan pembelajaran keamanan siber
+</footer>
+
 <script>
     const runBtn = document.getElementById('runBtn');
     const outputDiv = document.getElementById('output');
     const targetSelect = document.getElementById('targetSelect');
 
-    // 1. Load Targets saat halaman dibuka
+    // Load Targets
     async function loadTargets() {
         try {
             const res = await fetch('/targets');
@@ -177,7 +306,7 @@
     }
     loadTargets();
 
-    // 2. Handle Form Submit
+    // Handle Form Submit
     document.getElementById('scanForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -189,7 +318,6 @@
             return;
         }
 
-        // UI Loading State
         runBtn.disabled = true;
         runBtn.textContent = "Sedang Memproses...";
         outputDiv.innerHTML = '<span class="loading">SQLMap sedang berjalan... Mohon tunggu (maks 60 detik)...</span>';
@@ -207,25 +335,41 @@
             const result = await response.json();
 
             if (response.ok) {
-                // Tampilkan output sukses
                 outputDiv.textContent = result.output || "Tidak ada output (Check flags).";
             } else {
-                // Tampilkan error (termasuk blokir keamanan)
                 outputDiv.textContent = `[ERROR] ${result.message}\n\n${result.output || ''}`;
-                outputDiv.style.color = '#f7768e'; // Merah
+                outputDiv.style.color = '#f7768e';
             }
 
         } catch (error) {
             outputDiv.textContent = `[SYSTEM ERROR] Gagal menghubungi server: ${error.message}`;
         } finally {
-            // Reset UI
             runBtn.disabled = false;
             runBtn.textContent = "Jalankan SQLMap";
-            if (outputDiv.style.color === 'rgb(247, 118, 142)') {
+            if (outputDiv.style.color === '#f7768e') {
                  setTimeout(() => outputDiv.style.color = '#00ff00', 5000);
             }
         }
     });
+
+    // Modal Help
+    const modal = document.getElementById('helpModal');
+    const helpIcon = document.getElementById('helpIcon');
+    const closeBtn = document.getElementsByClassName('close')[0];
+
+    helpIcon.onclick = () => {
+        modal.style.display = "block";
+    }
+
+    closeBtn.onclick = () => {
+        modal.style.display = "none";
+    }
+
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
 </script>
 
 </body>
